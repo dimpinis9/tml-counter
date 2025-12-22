@@ -22,15 +22,16 @@ export default function TomorrowlandCountdown({
    */
   const calcDaysLeft = (target: string): number => {
     const now = new Date();
-    const todayMidnight = new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      now.getDate()
-    );
-    const targetMidnight = new Date(target + "T00:00:00"); // Parse as local time
-    const diffMs = targetMidnight.getTime() - todayMidnight.getTime();
-    const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-    return Math.max(0, days); // Clamp at 0
+
+    // today in UTC (date only)
+    const todayUtc = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+
+    // target in UTC (parse YYYY-MM-DD safely)
+    const [y, m, d] = target.split("-").map(Number);
+    const targetUtc = Date.UTC(y, (m ?? 1) - 1, d ?? 1);
+
+    const diffDays = Math.round((targetUtc - todayUtc) / 86400000);
+    return Math.max(0, diffDays);
   };
 
   useEffect(() => {
