@@ -1,27 +1,494 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html class="scroll-smooth dark" lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Dark Void Festival - Mobile Optimized</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#C6A85B", // Deep Amber/Gold
+              secondary: "#1F1F1F", // Obsidian/Charcoal
+              "background-dark": "#020202", // Near Absolute Black
+              "card-dark": "#080808",
+              "text-dim": "#888888",
+            },
+            fontFamily: {
+              display: ["'Montserrat'", "sans-serif"],
+              body: ["'Inter'", "sans-serif"],
+            },
+            backgroundImage: {
+              "hero-pattern":
+                "url('https://images.unsplash.com/photo-1514525253440-b393452e23f9?q=80&w=2574&auto=format&fit=crop')",
+            },
+            animation: {
+              "pulse-slow": "pulse 8s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+              "pulse-slower": "pulse 12s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+              float: "float 10s ease-in-out infinite",
+              glow: "glow 4s ease-in-out infinite alternate",
+              shimmer: "shimmer 8s linear infinite",
+              "spin-slow": "spin 20s linear infinite",
+            },
+            keyframes: {
+              float: {
+                "0%, 100%": { transform: "translateY(0)" },
+                "50%": { transform: "translateY(-15px)" },
+              },
+              glow: {
+                from: {
+                  textShadow:
+                    "0 0 20px rgba(198, 168, 91, 0.1), 0 0 40px rgba(198, 168, 91, 0.05)",
+                },
+                to: {
+                  textShadow:
+                    "0 0 50px rgba(198, 168, 91, 0.5), 0 0 90px rgba(198, 168, 91, 0.25)",
+                },
+              },
+              shimmer: {
+                "0%": { backgroundPosition: "200% center" },
+                "100%": { backgroundPosition: "-200% center" },
+              },
+            },
+          },
+        },
+      };
+    </script>
     <link
-      rel="icon"
-      type="image/png"
-      href="/src/tomorrowland-logo-png_seeklogo-326506.png"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400&amp;family=Montserrat:wght@100;200;300;400;500;600&amp;display=swap"
+      rel="stylesheet"
     />
-    <title>Tomorrowland Countdown</title>
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
     <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
+      .glass-panel {
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        background: rgba(8, 8, 8, 0.65);
+        border: 1px solid rgba(198, 168, 91, 0.08);
+        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
       }
-      body {
-        overflow: hidden;
+      .noise-bg {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        pointer-events: none;
+        z-index: 50;
+        opacity: 0.06;
+        background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyBAMAAADsEZWCAAAAGFBMVEUAAAAAAAACAgIBAQEAAAAAAAAAAAAAAAD3Ct38AAAACHRSTlMAMwA1MzMzM7O0s14AAABSSURBVDjLY2AYBaNgOANuIExBCwZQYQYpLCEYRM0QoE0QYJgClCVgYIgyA6uCKYyZIsgKkCKYwgwGjCgK8xnQFUAVMvCgK8ynQFcAV8jAg64wHAAAdwcSzH42sZ8AAAAASUVORK5CYII=");
+      }
+      .shimmer-text {
+        background: linear-gradient(
+          90deg,
+          #525252 0%,
+          #9ca3af 40%,
+          #c6a85b 50%,
+          #9ca3af 60%,
+          #525252 100%
+        );
+        background-size: 200% auto;
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+      .mask-image-gradient {
+        -webkit-mask-image: linear-gradient(
+          to bottom,
+          black 0%,
+          transparent 100%
+        );
+        mask-image: linear-gradient(to bottom, black 0%, transparent 100%);
+      }
+      ::-webkit-scrollbar {
+        width: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #000;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #333;
+        border-radius: 4px;
       }
     </style>
   </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+  <body
+    class="bg-background-dark text-white font-body h-screen w-screen relative overflow-x-hidden selection:bg-primary selection:text-black"
+  >
+    <div class="noise-bg"></div>
+    <div class="fixed top-6 right-6 z-[60]">
+      <button
+        class="p-3 rounded-full bg-black/40 backdrop-blur border border-white/10 hover:bg-white/5 transition-all shadow-lg group"
+        id="menu-btn"
+      >
+        <span
+          class="material-icons text-gray-400 group-hover:text-primary transition-colors"
+          >menu</span
+        >
+      </button>
+    </div>
+    <div
+      class="fixed inset-y-0 right-0 w-80 bg-[#0a0a0a] shadow-[0_0_50px_rgba(0,0,0,0.9)] transform translate-x-full transition-transform duration-500 ease-[cubic-bezier(0.2,0.8,0.2,1)] z-[70] flex flex-col justify-center items-center border-l border-white/5"
+      id="sidebar"
+    >
+      <button
+        class="absolute top-6 right-6 p-2 text-gray-500 hover:text-primary transition-colors"
+        id="close-menu"
+      >
+        <span class="material-icons text-3xl">close</span>
+      </button>
+      <nav class="space-y-10 text-center">
+        <a
+          class="block text-xl font-display font-light hover:text-primary tracking-[0.2em] uppercase transition-colors duration-300"
+          href="#"
+          >Lineup</a
+        >
+        <a
+          class="block text-xl font-display font-light hover:text-primary tracking-[0.2em] uppercase transition-colors duration-300"
+          href="#"
+          >Tickets</a
+        >
+        <a
+          class="block text-xl font-display font-light hover:text-primary tracking-[0.2em] uppercase transition-colors duration-300"
+          href="#"
+          >Experience</a
+        >
+        <a
+          class="block text-xl font-display font-light hover:text-primary tracking-[0.2em] uppercase transition-colors duration-300"
+          href="#"
+          >Info</a
+        >
+      </nav>
+      <div class="mt-16 text-xs text-gray-600 tracking-[0.3em]">
+        INTO THE VOID
+      </div>
+    </div>
+    <div class="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+      <div
+        class="absolute inset-0 bg-hero-pattern bg-cover bg-center opacity-10 mix-blend-overlay grayscale"
+      ></div>
+      <div
+        class="absolute inset-0 bg-gradient-to-b from-black via-transparent to-black"
+      ></div>
+      <div
+        class="absolute inset-0 bg-gradient-to-t from-black via-black/90 to-transparent"
+      ></div>
+      <div
+        class="absolute -top-[10%] -left-[10%] w-[800px] h-[800px] bg-primary/10 rounded-full blur-[120px] mix-blend-screen animate-pulse-slow"
+      ></div>
+      <div
+        class="absolute -bottom-[10%] -right-[10%] w-[600px] h-[600px] bg-gray-700/20 rounded-full blur-[100px] mix-blend-screen animate-pulse-slower"
+      ></div>
+      <div
+        class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[150px] mix-blend-screen animate-pulse"
+      ></div>
+      <canvas
+        class="absolute inset-0 w-full h-full mix-blend-screen opacity-80"
+        id="particle-canvas"
+      ></canvas>
+    </div>
+    <main
+      class="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 py-12 text-center"
+    >
+      <h1
+        class="flex flex-col md:flex-row items-center justify-center gap-y-4 md:gap-y-0 md:gap-x-8 font-display font-light text-sm md:text-lg tracking-[0.3em] md:tracking-[0.6em] uppercase mb-10 md:mb-16 animate-shimmer shimmer-text opacity-90 w-full max-w-5xl mx-auto"
+      >
+        <span class="whitespace-nowrap">Live Today</span>
+        <div
+          class="hidden md:block w-[1px] h-3 bg-gradient-to-b from-transparent via-primary/60 to-transparent shadow-[0_0_8px_rgba(198,168,91,0.6)]"
+        ></div>
+        <span class="whitespace-nowrap">Love Tomorrow</span>
+        <div
+          class="hidden md:block w-[1px] h-3 bg-gradient-to-b from-transparent via-primary/60 to-transparent shadow-[0_0_8px_rgba(198,168,91,0.6)]"
+        ></div>
+        <span class="whitespace-nowrap">Unite Forever</span>
+      </h1>
+      <div class="group relative w-full max-w-lg mx-auto">
+        <div
+          class="absolute -inset-1 bg-gradient-to-r from-primary/20 via-transparent to-primary/20 rounded-[2rem] blur-xl opacity-30 group-hover:opacity-60 transition duration-1000 animate-pulse-slow"
+        ></div>
+        <div
+          class="relative glass-panel rounded-[2rem] p-8 md:p-16 flex flex-col items-center justify-center min-h-[400px] md:min-h-[450px]"
+        >
+          <div
+            class="w-full flex items-center justify-center space-x-4 mb-8 md:mb-10 opacity-50"
+          >
+            <div
+              class="h-[1px] w-12 md:w-20 bg-gradient-to-r from-transparent to-primary"
+            ></div>
+            <div
+              class="w-2 h-2 rotate-45 border border-primary animate-spin-slow"
+            ></div>
+            <div
+              class="h-[1px] w-12 md:w-20 bg-gradient-to-l from-transparent to-primary"
+            ></div>
+          </div>
+          <p
+            class="font-display text-[10px] md:text-xs tracking-[0.4em] text-gray-400 uppercase mb-6 md:mb-8 drop-shadow-[0_0_5px_rgba(255,255,255,0.2)]"
+          >
+            Days Until The Void
+          </p>
+          <div class="relative mb-6">
+            <h2
+              id="days-counter"
+              class="font-display font-thin text-7xl md:text-9xl text-gray-100 tracking-tighter animate-glow mix-blend-screen relative z-10"
+            >
+              181
+            </h2>
+            <h2
+              id="days-counter-shadow1"
+              class="font-display font-thin text-7xl md:text-9xl text-primary tracking-tighter absolute top-0 left-0 w-full opacity-20 blur-xl transform scale-110 pointer-events-none z-0"
+            >
+              181
+            </h2>
+            <h2
+              id="days-counter-shadow2"
+              class="font-display font-thin text-7xl md:text-9xl text-primary tracking-tighter absolute top-full left-0 w-full opacity-10 transform scale-y-[-0.8] blur-md pointer-events-none -mt-8 md:-mt-10 mask-image-gradient"
+            >
+              181
+            </h2>
+          </div>
+          <p
+            class="mt-6 md:mt-8 font-display text-lg md:text-2xl text-gray-200 tracking-[0.2em] font-light drop-shadow-[0_0_10px_rgba(198,168,91,0.3)]"
+          >
+            17 JULY 2026
+          </p>
+          <p
+            class="mt-4 font-body text-[10px] md:text-sm text-gray-500 tracking-widest uppercase opacity-80"
+          >
+            The Journey to The Dream Begins
+          </p>
+          <!-- <a
+            class="mt-10 md:mt-12 px-8 md:px-10 py-3 md:py-4 rounded-sm border border-primary/40 text-primary hover:bg-primary/10 hover:border-primary/80 transition-all duration-500 text-[10px] md:text-xs tracking-[0.25em] uppercase font-light shadow-[0_0_15px_rgba(198,168,91,0.05)] hover:shadow-[0_0_30px_rgba(198,168,91,0.2)] group-hover:scale-105 relative overflow-hidden"
+            href="#"
+          >
+            <span class="relative z-10">Pre-Register</span>
+            <div
+              class="absolute inset-0 h-full w-full bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full hover:animate-[shimmer_2s_infinite]"
+            ></div>
+          </a> -->
+        </div>
+      </div>
+      <div
+        class="absolute bottom-0 left-0 w-full h-96 flex justify-between pointer-events-none px-4 md:px-32 z-0 opacity-20"
+      >
+        <div
+          class="w-[1px] h-full bg-gradient-to-t from-primary via-primary/20 to-transparent shadow-[0_0_15px_#C6A85B]"
+        ></div>
+        <div
+          class="w-[1px] h-full bg-gradient-to-t from-primary via-primary/20 to-transparent shadow-[0_0_15px_#C6A85B]"
+        ></div>
+      </div>
+    </main>
+    <div
+      class="absolute bottom-10 left-1/2 transform -translate-x-1/2 flex flex-col items-center animate-bounce cursor-pointer z-20 group opacity-60 hover:opacity-100 transition-opacity"
+    >
+      <span
+        class="text-[9px] tracking-[0.3em] uppercase text-gray-500 group-hover:text-primary transition-colors drop-shadow-lg"
+        >Scroll to Explore</span
+      >
+      <span
+        class="material-icons text-gray-500 mt-2 group-hover:text-primary transition-colors text-sm"
+        >keyboard_arrow_down</span
+      >
+    </div>
+    <script>
+      // Countdown Logic
+      function calcDaysLeft(targetDate) {
+        const now = new Date();
+        const todayMidnight = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate(),
+        );
+        const targetMidnight = new Date(targetDate + "T00:00:00");
+        const diffMs = targetMidnight.getTime() - todayMidnight.getTime();
+        const days = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+        return Math.max(0, days);
+      }
+
+      function updateCountdown() {
+        const daysLeft = calcDaysLeft("2026-07-17");
+        document.getElementById("days-counter").textContent = daysLeft;
+        document.getElementById("days-counter-shadow1").textContent = daysLeft;
+        document.getElementById("days-counter-shadow2").textContent = daysLeft;
+      }
+
+      // Update on load
+      updateCountdown();
+
+      // Update at midnight
+      function scheduleNextUpdate() {
+        const now = new Date();
+        const tomorrow = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate() + 1,
+        );
+        const msUntilMidnight = tomorrow.getTime() - now.getTime();
+        setTimeout(() => {
+          updateCountdown();
+          setInterval(updateCountdown, 24 * 60 * 60 * 1000);
+        }, msUntilMidnight);
+      }
+      scheduleNextUpdate();
+
+      // Navigation Menu Logic
+      const menuBtn = document.getElementById("menu-btn");
+      const closeMenu = document.getElementById("close-menu");
+      const sidebar = document.getElementById("sidebar");
+      function toggleMenu() {
+        if (sidebar.classList.contains("translate-x-full")) {
+          sidebar.classList.remove("translate-x-full");
+        } else {
+          sidebar.classList.add("translate-x-full");
+        }
+      }
+      menuBtn.addEventListener("click", toggleMenu);
+      closeMenu.addEventListener("click", toggleMenu);
+      document.addEventListener("click", (e) => {
+        if (
+          !sidebar.contains(e.target) &&
+          !menuBtn.contains(e.target) &&
+          !sidebar.classList.contains("translate-x-full")
+        ) {
+          toggleMenu();
+        }
+      });
+      // High-Energy Particle System Logic with Mobile Scaling
+      const canvas = document.getElementById("particle-canvas");
+      const ctx = canvas.getContext("2d");
+      let width, height;
+      let particles = [];
+      let particleCount = 200;
+      const mouse = { x: null, y: null };
+      // Set up canvas sizing
+      function resize() {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+        // Scale particle count for mobile devices for better performance
+        if (width < 768) {
+          particleCount = 100;
+        } else {
+          particleCount = 200;
+        }
+        // Re-init particles on drastic resize (optional, but ensures count is correct)
+        if (particles.length !== particleCount) initParticles();
+      }
+      window.addEventListener("resize", resize);
+      // Mouse tracking
+      document.addEventListener("mousemove", (e) => {
+        mouse.x = e.clientX;
+        mouse.y = e.clientY;
+      });
+      // Touch tracking for mobile interaction
+      document.addEventListener(
+        "touchmove",
+        (e) => {
+          if (e.touches.length > 0) {
+            mouse.x = e.touches[0].clientX;
+            mouse.y = e.touches[0].clientY;
+          }
+        },
+        { passive: true },
+      );
+      document.addEventListener(
+        "touchstart",
+        (e) => {
+          if (e.touches.length > 0) {
+            mouse.x = e.touches[0].clientX;
+            mouse.y = e.touches[0].clientY;
+          }
+        },
+        { passive: true },
+      );
+      // Particle Class
+      class Particle {
+        constructor() {
+          this.init();
+        }
+        init() {
+          this.x = Math.random() * width;
+          this.y = Math.random() * height;
+          // Higher base velocity for 'techno' feel
+          this.vx = (Math.random() - 0.5) * 2;
+          this.vy = (Math.random() - 0.5) * 2;
+          this.size = Math.random() * 2.5 + 0.5; // Varied sizes
+          this.color = "#C6A85B";
+          this.life = Math.random() * 100;
+        }
+        update() {
+          // Mouse Interaction Physics
+          if (mouse.x != null) {
+            let dx = mouse.x - this.x;
+            let dy = mouse.y - this.y;
+            let distance = Math.sqrt(dx * dx + dy * dy);
+            // Adjusted Interaction Radius for mobile
+            const interactionRadius = width < 768 ? 150 : 250;
+            if (distance < interactionRadius) {
+              const forceDirectionX = dx / distance;
+              const forceDirectionY = dy / distance;
+              const force = (interactionRadius - distance) / interactionRadius;
+              // Acceleration towards/around mouse (swirling effect)
+              const swirl = 2;
+              this.vx +=
+                forceDirectionX * force * 1.5 - forceDirectionY * force * swirl;
+              this.vy +=
+                forceDirectionY * force * 1.5 + forceDirectionX * force * swirl;
+            }
+          }
+          // Move particle
+          this.x += this.vx;
+          this.y += this.vy;
+          // Friction (keep them moving but controlled)
+          this.vx *= 0.96;
+          this.vy *= 0.96;
+          // Minimum constant movement (The "Energy")
+          if (Math.abs(this.vx) < 0.2) this.vx += (Math.random() - 0.5) * 0.5;
+          if (Math.abs(this.vy) < 0.2) this.vy += (Math.random() - 0.5) * 0.5;
+          // Screen wrapping
+          if (this.x < 0) this.x = width;
+          else if (this.x > width) this.x = 0;
+          if (this.y < 0) this.y = height;
+          else if (this.y > height) this.y = 0;
+        }
+        draw() {
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+          ctx.fillStyle = this.color;
+          ctx.shadowBlur = 15;
+          ctx.shadowColor = this.color;
+          ctx.globalAlpha = Math.random() * 0.5 + 0.5; // Flicker effect
+          ctx.fill();
+          ctx.globalAlpha = 1;
+        }
+      }
+      // Initialize swarm
+      function initParticles() {
+        particles = [];
+        for (let i = 0; i < particleCount; i++) {
+          particles.push(new Particle());
+        }
+      }
+      // Initial call
+      resize();
+      initParticles();
+      // Animation Loop
+      function animate() {
+        ctx.clearRect(0, 0, width, height);
+        particles.forEach((p, index) => {
+          p.update();
+          p.draw();
+        });
+        requestAnimationFrame(animate);
+      }
+      animate();
+    </script>
   </body>
 </html>
