@@ -1,0 +1,347 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --background: #f2ead7;
+  --foreground: #17251f;
+  --card: #fbf5e8;
+  --primary: #aa7627;
+  --primary-foreground: #fff9e9;
+  --muted: #e4d8bd;
+  --muted-foreground: #6f6858;
+  --border: #cdbd9a;
+  --ring: #b68432;
+  --destructive: #a9382c;
+  --coral: #8e3155;
+  --sky: #1e7166;
+}
+
+.dark {
+  --background: #081713;
+  --foreground: #f5ecd5;
+  --card: #10251f;
+  --primary: #d8ad5b;
+  --primary-foreground: #102018;
+  --muted: #18342b;
+  --muted-foreground: #b6ad96;
+  --border: #315044;
+  --ring: #e4bd6d;
+  --destructive: #f08372;
+  --coral: #9f3f6c;
+  --sky: #2c8878;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-ring: var(--ring);
+  --color-destructive: var(--destructive);
+  --color-coral: var(--coral);
+  --color-sky: var(--sky);
+  --font-display: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+  --font-sans: "Avenir Next", Avenir, "Segoe UI", sans-serif;
+  --font-mono: "Cascadia Mono", "SFMono-Regular", Consolas, monospace;
+}
+
+* { border-color: var(--border); }
+html {
+  background: var(--background);
+  overflow-x: clip;
+  -webkit-text-size-adjust: 100%;
+}
+body {
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: clip;
+  overscroll-behavior-y: none;
+  background:
+    radial-gradient(circle at 12% 4%, color-mix(in srgb, var(--primary) 15%, transparent), transparent 25rem),
+    radial-gradient(circle at 92% 72%, color-mix(in srgb, var(--coral) 16%, transparent), transparent 28rem),
+    linear-gradient(120deg, transparent 0 48%, color-mix(in srgb, var(--sky) 5%, transparent) 49% 51%, transparent 52%),
+    var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  -webkit-tap-highlight-color: transparent;
+}
+body::before {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  content: "";
+  opacity: 0.16;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.18'/%3E%3C/svg%3E");
+}
+body::after {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  content: "";
+  opacity: 0.22;
+  background-image:
+    radial-gradient(circle at center, transparent 0 2px, color-mix(in srgb, var(--primary) 35%, transparent) 2.5px 3px, transparent 3.5px),
+    linear-gradient(30deg, transparent 48%, color-mix(in srgb, var(--primary) 12%, transparent) 49% 51%, transparent 52%);
+  background-size: 48px 48px, 96px 96px;
+  mask-image: linear-gradient(to bottom, black, transparent 48%);
+}
+::selection { background: var(--primary); color: var(--primary-foreground); }
+
+.festival-emblem {
+  position: relative;
+  isolation: isolate;
+}
+
+.festival-emblem::before,
+.festival-emblem::after {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  z-index: -1;
+  width: 135%;
+  height: 1px;
+  content: "";
+  background: linear-gradient(90deg, transparent, var(--primary), transparent);
+  transform: translate(-50%, -50%) rotate(45deg);
+  opacity: 0.5;
+}
+
+.festival-emblem::after {
+  transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+.stage-perspective {
+  perspective: 1100px;
+}
+
+.stage-world {
+  transform-style: preserve-3d;
+  background:
+    radial-gradient(circle at 50% 52%, var(--stage-accent), transparent 5%),
+    radial-gradient(circle at 50% 55%, color-mix(in srgb, var(--stage-glow) 75%, transparent), transparent 34%),
+    linear-gradient(to top, color-mix(in srgb, var(--stage-glow) 45%, #06110e), transparent 68%);
+  border-radius: 50% 50% 12% 12%;
+  box-shadow:
+    inset 0 -30px 80px color-mix(in srgb, var(--stage-glow) 55%, transparent),
+    0 0 80px color-mix(in srgb, var(--stage-accent) 22%, transparent);
+}
+
+.stage-photo {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: 1.5rem;
+  transform-style: preserve-3d;
+  background: #030b09;
+}
+
+.stage-photo-backdrop {
+  scale: 1.04;
+  filter: blur(14px) saturate(1.15) brightness(0.52);
+  opacity: 0.45;
+}
+
+.stage-photo-subject {
+  z-index: 1;
+  filter: saturate(1.08) contrast(1.04);
+  transform: translateZ(18px) scale(1.01);
+}
+
+.stage-depth-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  opacity: 0;
+  transition: opacity 500ms ease;
+}
+
+.stage-depth-canvas[data-ready="true"] {
+  opacity: 1;
+}
+
+.stage-photo-grade {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  background:
+    linear-gradient(to top, rgba(4, 12, 10, 0.82), transparent 35%),
+    radial-gradient(circle at 50% 45%, transparent 55%, rgba(3, 10, 8, 0.28) 100%),
+    linear-gradient(120deg, color-mix(in srgb, var(--stage-glow) 12%, transparent), transparent 46%);
+  pointer-events: none;
+}
+
+.stage-world-with-photo {
+  background: #06110e;
+  border-radius: 1.5rem;
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--stage-accent) 42%, transparent),
+    0 30px 90px color-mix(in srgb, var(--stage-glow) 35%, transparent);
+}
+
+.stage-world-with-photo::before {
+  display: none;
+}
+
+.stage-world::before {
+  position: absolute;
+  inset: 12% 8% 5%;
+  content: "";
+  border: 1px solid color-mix(in srgb, var(--stage-accent) 52%, transparent);
+  clip-path: polygon(50% 0, 88% 20%, 100% 72%, 78% 100%, 22% 100%, 0 72%, 12% 20%);
+  transform: translateZ(35px);
+  box-shadow: inset 0 0 60px color-mix(in srgb, var(--stage-accent) 14%, transparent);
+}
+
+.stage-core {
+  position: absolute;
+  left: 50%;
+  top: 48%;
+  display: grid;
+  place-items: center;
+  width: 9rem;
+  height: 9rem;
+  border-radius: 999px;
+  background: radial-gradient(circle, var(--stage-accent), var(--stage-glow) 42%, #071510 72%);
+  transform: translate3d(-50%, -50%, 95px);
+  box-shadow:
+    0 0 35px color-mix(in srgb, var(--stage-accent) 65%, transparent),
+    0 0 100px color-mix(in srgb, var(--stage-glow) 80%, transparent);
+  animation: stage-breathe 4s ease-in-out infinite;
+}
+
+.stage-wing,
+.stage-tower,
+.stage-orbit {
+  position: absolute;
+  border: 1px solid color-mix(in srgb, var(--stage-accent) 58%, transparent);
+}
+
+.stage-wing {
+  top: 24%;
+  width: 34%;
+  height: 52%;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--stage-glow) 62%, transparent), transparent);
+  clip-path: polygon(0 20%, 100% 0, 78% 100%, 12% 72%);
+}
+
+.stage-wing-left {
+  left: 7%;
+  transform: rotateY(18deg) translateZ(26px);
+}
+
+.stage-wing-right {
+  right: 7%;
+  transform: scaleX(-1) rotateY(18deg) translateZ(26px);
+}
+
+.stage-tower {
+  bottom: 11%;
+  width: 8%;
+  height: 50%;
+  background: linear-gradient(to top, var(--stage-glow), transparent);
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+  transform: translateZ(48px);
+}
+
+.stage-tower-left { left: 20%; }
+.stage-tower-right { right: 20%; }
+
+.stage-orbit {
+  left: 50%;
+  top: 48%;
+  border-radius: 999px;
+  transform-style: preserve-3d;
+}
+
+.stage-orbit-one {
+  width: 17rem;
+  height: 17rem;
+  transform: translate3d(-50%, -50%, 60px) rotateX(67deg);
+  animation: stage-orbit 12s linear infinite;
+}
+
+.stage-orbit-two {
+  width: 22rem;
+  height: 22rem;
+  transform: translate3d(-50%, -50%, 15px) rotateY(67deg);
+  animation: stage-orbit-reverse 18s linear infinite;
+}
+
+.stage-particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--stage-accent);
+  box-shadow: 0 0 12px var(--stage-accent);
+  transform: translateZ(120px);
+  animation: stage-particle 4.5s ease-in-out infinite;
+}
+
+.stage-motion-paused,
+.stage-motion-paused * {
+  animation-play-state: paused !important;
+}
+
+@keyframes stage-breathe {
+  0%, 100% { scale: 0.96; filter: brightness(0.9); }
+  50% { scale: 1.04; filter: brightness(1.2); }
+}
+
+@keyframes stage-orbit {
+  to { transform: translate3d(-50%, -50%, 60px) rotateX(67deg) rotateZ(360deg); }
+}
+
+@keyframes stage-orbit-reverse {
+  to { transform: translate3d(-50%, -50%, 15px) rotateY(67deg) rotateZ(-360deg); }
+}
+
+@keyframes stage-particle {
+  0%, 100% { opacity: 0.15; translate: 0 12px; }
+  50% { opacity: 1; translate: 0 -16px; }
+}
+
+@media (max-width: 389px) {
+  .stage-core {
+    width: 7rem;
+    height: 7rem;
+  }
+
+  .stage-orbit-one {
+    width: 13rem;
+    height: 13rem;
+  }
+
+  .stage-orbit-two {
+    width: 17rem;
+    height: 17rem;
+  }
+}
+
+button,
+a,
+input,
+select,
+textarea {
+  touch-action: manipulation;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -1,21 +1,52 @@
 {
-  "name": "tml-counter",
-  "version": "1.0.0",
-  "type": "module",
+  "name": "keepsake",
+  "version": "0.1.0",
+  "private": true,
+  "overrides": {
+    "postcss": "8.5.23",
+    "sharp": "0.35.3"
+  },
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint . --max-warnings=0",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:smoke": "node --env-file=.env.local scripts/supabase-production-smoke.mjs",
+    "test:watch": "vitest"
   },
   "dependencies": {
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "@hookform/resolvers": "latest",
+    "@radix-ui/react-alert-dialog": "^1.1.21",
+    "@radix-ui/react-dialog": "^1.1.21",
+    "@radix-ui/react-slot": "latest",
+    "@supabase/ssr": "latest",
+    "@supabase/supabase-js": "latest",
+    "class-variance-authority": "latest",
+    "clsx": "latest",
+    "lucide-react": "latest",
+    "next": "latest",
+    "next-themes": "latest",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "react-hook-form": "latest",
+    "sonner": "^2.0.7",
+    "tailwind-merge": "latest",
+    "tus-js-client": "^4.3.1",
+    "zod": "latest"
   },
   "devDependencies": {
-    "@types/react": "^18.3.12",
-    "@types/react-dom": "^18.3.1",
-    "@vitejs/plugin-react": "^4.3.4",
-    "typescript": "^5.6.3",
-    "vite": "^5.4.11"
+    "@playwright/test": "^1.61.1",
+    "@tailwindcss/postcss": "latest",
+    "@types/node": "latest",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "eslint": "latest",
+    "eslint-config-next": "latest",
+    "tailwindcss": "latest",
+    "tw-animate-css": "latest",
+    "typescript": "latest",
+    "vitest": "latest"
   }
 }

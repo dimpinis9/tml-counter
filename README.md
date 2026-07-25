@@ -1,137 +1,255 @@
-# Tomorrowland-Inspired Countdown Widget
+# Keepsake
 
-A premium full-screen countdown component with magical Art-Nouveau/festival fantasy aesthetics featuring gold/purple gradients, ornamental SVG decorations, and animated dust particles.
+A private photo and video sharing space for small groups after trips and
+events. Keepsake is a personal application, not a SaaS product.
 
-## Features
+## Stack
 
-- ✨ Full-screen immersive design with gradient backgrounds
-- ⏰ Accurate day countdown that updates automatically at local midnight
-- 🎨 Gold/purple glow effects with CSS animations
-- ♿ Fully accessible (ARIA labels, keyboard navigation, reduced motion support)
-- 🖼️ Optional logo watermark background
-- 📱 Responsive design
-- ⚡ Performance-optimized (25 particles max, memoized calculations)
-- 🎯 No external dependencies (pure React + CSS)
+- Next.js App Router, React, and strict TypeScript
+- Tailwind CSS and shadcn/ui conventions
+- Supabase Auth, Postgres, and Row Level Security
+- Zod, React Hook Form, and Lucide React
+- Vitest for unit tests
 
-## Usage
+## Local setup
 
-### Next.js 14 App Router
+1. Install dependencies:
 
-```tsx
-"use client";
+   ```bash
+   npm install
+   ```
 
-import TomorrowlandCountdown from "./TomorrowlandCountdown";
+2. Copy `.env.example` to `.env.local`:
 
-export default function Page() {
-  return (
-    <TomorrowlandCountdown
-      targetDate="2026-07-17"
-      logoSrc="/tomorrowland-logo.svg"
-      logoAlt="Tomorrowland Logo"
-    />
-  );
-}
+   ```powershell
+   Copy-Item .env.example .env.local
+   ```
+
+3. Add the values from **Supabase Dashboard → Project Settings → API**:
+
+   ```env
+   NEXT_PUBLIC_SUPABASE_URL=https://YOUR_PROJECT.supabase.co
+   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_...
+   SUPABASE_SERVICE_ROLE_KEY=YOUR_SERVICE_ROLE_KEY
+   NEXT_PUBLIC_APP_URL=http://localhost:3000
+   SUPABASE_IMAGE_TRANSFORMATIONS_ENABLED=false
+   ```
+
+4. Apply the migration as described below, then run:
+
+   ```bash
+   npm run dev
+   ```
+
+Open [http://localhost:3000](http://localhost:3000).
+
+`SUPABASE_SERVICE_ROLE_KEY` is server-only and is not currently used by the
+browser. It is used only by the server-side chapter cleanup path so an owner can
+remove all members' private Storage objects before deleting a chapter. Never
+import it into Client Components or expose it with a `NEXT_PUBLIC_` prefix.
+
+## Database migrations
+
+The initial schema is in
+`supabase/migrations/202607230001_initial_schema.sql`. It creates profiles,
+trips, memberships, albums, media metadata, invitations, indexes, profile/trip
+triggers, and all RLS policies.
+
+Install or run the Supabase CLI, authenticate, link this directory to your
+project, and push migrations:
+
+```bash
+npx supabase@latest login
+npx supabase@latest link --project-ref YOUR_PROJECT_REF
+npx supabase@latest db push
 ```
 
-### Vite + React
+For a fully local Supabase stack:
 
-```tsx
-import TomorrowlandCountdown from "./TomorrowlandCountdown";
-
-function App() {
-  return (
-    <TomorrowlandCountdown
-      targetDate="2026-07-17"
-      logoSrc="/tomorrowland-logo.svg"
-      logoAlt="Tomorrowland Logo"
-    />
-  );
-}
-
-export default App;
+```bash
+npx supabase@latest start
+npx supabase@latest db reset
 ```
 
-## Props
+`db reset` recreates the local database and reapplies every migration. Do not
+run it against a production database.
 
-| Prop         | Type     | Default           | Description                                                  |
-| ------------ | -------- | ----------------- | ------------------------------------------------------------ |
-| `targetDate` | `string` | `"2026-07-17"`    | Target date in YYYY-MM-DD format (local timezone)            |
-| `logoSrc`    | `string` | `undefined`       | Optional path to logo image (e.g., "/tomorrowland-logo.svg") |
-| `logoAlt`    | `string` | `"Festival Logo"` | Alt text for logo accessibility                              |
+## Supabase Auth configuration
 
-## Logo Setup
+In **Authentication → URL Configuration**, set:
 
-### With Logo
+- Site URL: `http://localhost:3000`
+- Redirect URL: `http://localhost:3000/auth/callback`
+- Production redirect URL: `https://YOUR_DOMAIN/auth/callback`
 
-Place your logo file in the `public` folder:
+Supabase allows query strings on the callback, so the app uses:
 
+- `/auth/callback?next=/trips` for email confirmation
+- `/auth/callback?next=/reset-password` for password recovery
+
+In **Authentication → Providers → Email**:
+
+1. Enable the Email provider.
+2. Keep email confirmation enabled for the normal production flow.
+3. Configure an SMTP provider before production; Supabase's default mailer is
+   intended only for limited development use.
+
+The signup form sends `display_name` as Auth user metadata. The database
+trigger `handle_new_user()` creates the matching `profiles` row automatically.
+
+## Creating the first account
+
+1. Apply the migration.
+2. Start the app with `npm run dev`.
+3. Visit `http://localhost:3000/signup`.
+4. Enter a display name, email, and strong password.
+5. Open the confirmation email and follow its link.
+6. After the callback completes, sign in at `/login`.
+
+If email confirmation is disabled for local development, signup immediately
+creates a session and the account can be used without the email step.
+
+## Authentication routes
+
+- `/login`
+- `/signup`
+- `/forgot-password`
+- `/reset-password`
+- `/auth/callback`
+- `/auth/signout`
+
+`/trips` and `/profile` are protected by both the Next.js proxy and the server
+layout. Authentication checks use `getUser()` rather than trusting an
+unverified local session.
+
+## Row Level Security
+
+RLS is enabled on every public table. Membership and owner checks use
+`SECURITY DEFINER` functions with an empty `search_path`, preventing recursive
+policies on `trip_members`.
+
+At a high level:
+
+- members can read their trips, memberships, albums, and media;
+- only owners can change trip settings, memberships, and invitations;
+- members can insert media only for their own user ID;
+- only the uploader can update or delete their media;
+- profiles are visible to the user and people sharing a trip with them.
+
+## Quality checks
+
+```bash
+npm run lint
+npm run typecheck
+npm run test
+npm run build
 ```
-public/
-  └── tomorrowland-logo.svg
+
+## Trip management
+
+Authenticated users can now:
+
+- view their RLS-filtered trips at `/trips`;
+- create a trip at `/trips/new`;
+- view its private detail page at `/trips/[tripId]`;
+- manage settings and memberships at `/trips/[tripId]/settings` when they are
+  the owner.
+
+Trip creation uses the `create_trip` database RPC. The trip insert and the
+existing `on_trip_created` owner-membership trigger run in the same PostgreSQL
+transaction, so a trip cannot be created without its initial owner.
+
+Owners can update trip details, remove other members, and delete the trip.
+Authorization is checked in Server Actions and enforced again through RLS.
+Owners cannot remove themselves, including through direct Data API calls.
+
+Owners can create an email-bound invitation link from chapter settings. The
+link expires after seven days, stores only a SHA-256 token digest, and can be
+accepted once by an authenticated account with the matching email address.
+
+Deleting a trip first removes all private Storage objects in bounded batches
+through a server-only admin client, then cascades through dependent database
+records. Deletion is blocked if Storage cleanup is not configured or fails.
+
+## Private media storage
+
+The `trip-media` Supabase Storage bucket is created by
+`202607230003_private_trip_media_storage.sql`. It is always private and accepts:
+
+- JPEG, PNG, WebP, HEIC, and HEIF photos up to 30 MB;
+- MP4, MOV, and WebM videos up to 1 GB.
+
+Objects use immutable UUID paths:
+
+```text
+trips/{tripId}/{userId}/{mediaId}/{sanitizedFilename}
 ```
 
-Then use it:
+Storage RLS validates every path segment. Upload and read access requires trip
+membership, while deletion requires both Storage ownership and the uploader's
+user-ID folder. The matching `media` insert policy independently verifies that
+the database IDs and object path agree.
 
-```tsx
-<TomorrowlandCountdown logoSrc="/tomorrowland-logo.svg" />
+Uploads use Supabase's resumable TUS endpoint directly from the browser with
+6 MB chunks. File bytes never pass through a Next.js route, Server Action, or
+service-role client. After Storage succeeds, the browser inserts the media
+metadata row. If that insert fails, it attempts to remove the orphaned object.
+
+## Private gallery, viewer, and downloads
+
+`/trips/[tripId]` loads media in pages of 24. Filtering and sorting happen in
+Postgres, so the browser never downloads the complete media table. The gallery
+supports All/Photos/Videos filters, newest/oldest sorting, multi-select,
+sequential original downloads, a keyboard- and swipe-friendly viewer, and
+uploader-only deletion.
+
+Every preview, viewer, and download URL is short-lived and generated by a
+Server Action only after a fresh user and trip-membership check. URLs are never
+stored in Postgres, the service-role key is never sent to the browser, and no
+public URL is created. Failed or expired URLs can be refreshed from the viewer.
+Downloads use signed URLs with the Storage `download` disposition and retain a
+sanitized original filename.
+
+Deletion first verifies uploader ownership, then removes the Storage object,
+then removes its database record. Storage and Postgres cannot share one
+transaction. If the second operation fails, the UI reports the partial failure
+and leaves the record available for a cleanup retry. Storage policies and
+database RLS independently deny deletion by another member.
+
+### Thumbnail transformations
+
+Supabase Storage image transformations are available on paid plans. On a paid
+project, enable them in **Storage → Settings** and set:
+
+```env
+SUPABASE_IMAGE_TRANSFORMATIONS_ENABLED=true
 ```
 
-### Without Logo
+Photo grid previews then use 640×640 transformed signed URLs. Video items use a
+local placeholder until the viewer is opened. On the Free plan keep the value
+`false`: the gallery deliberately displays private placeholders instead of
+loading every full-resolution original. The active original is signed only
+when the user opens it. HEIC source transformations are supported by Supabase,
+but browser rendering still depends on the transformed output and plan
+availability.
 
-If you don't provide `logoSrc`, the component will display an abstract CSS/SVG festival emblem instead.
+### Supabase plan limit
 
-```tsx
-<TomorrowlandCountdown targetDate="2026-07-17" />
+The bucket ceiling is configured for 1 GB, but the Supabase project's global
+Storage limit still applies. Free projects currently allow files only up to
+50 MB. Supporting videos larger than 50 MB therefore requires a paid Supabase
+plan and a matching global limit in **Storage → Settings**.
+
+## Production smoke test
+
+The disposable smoke test creates three verified users, exercises group
+creation, invitation acceptance, RLS isolation, private upload, byte-identical
+signed download, delete permissions, and complete cleanup:
+
+```bash
+npm run test:smoke
 ```
 
-## How It Works
-
-### Day Calculation
-
-The component calculates **full days** between today's local midnight and the target date's local midnight:
-
-- Uses `Date` constructor for local timezone calculations
-- Updates automatically at midnight using `setTimeout` + `setInterval`
-- Clamps minimum value at 0 (won't show negative days)
-
-### Performance
-
-- Particle positions are memoized to prevent recalculation
-- Only 25 particles to avoid heavy rendering
-- Animations disabled when `prefers-reduced-motion` is set
-
-### Accessibility
-
-- Semantic HTML with proper ARIA labels
-- Screen reader announcements for countdown updates (`aria-live="polite"`)
-- High contrast text (WCAG AA compliant)
-- Respects user's motion preferences
-- Keyboard navigable
-
-## Customization
-
-You can modify the appearance by editing the `<style>` block in the component:
-
-- **Colors**: Change gradient stops, gold (`#ffd700`), purple (`#2d1b4e`, `#9333ea`)
-- **Animations**: Adjust `glow-pulse`, `float`, `ornament-shine` keyframes
-- **Particles**: Change count in `Array.from({ length: 25 })`
-- **Typography**: Modify font sizes in `.tml-days-number`, `.tml-label`, etc.
-
-## Browser Support
-
-Works in all modern browsers that support:
-
-- CSS custom properties
-- CSS Grid/Flexbox
-- ES6+ JavaScript
-- React 18+
-
-## License
-
-MIT - Feel free to use in personal or commercial projects.
-
-## Important Notes
-
-⚠️ **VERIFY TARGET DATE**: The default date (2026-07-17) should be confirmed against official Tomorrowland announcements.
-
-⚠️ **LOGO COPYRIGHT**: Do not use official Tomorrowland logos without permission. This component is designed to work with your own assets or the provided fallback emblem.
+It requires a server-only `SUPABASE_SERVICE_ROLE_KEY` in `.env.local`. The test
+uses unique `example.test` accounts and removes all users, objects, and database
+records in a `finally` cleanup block.

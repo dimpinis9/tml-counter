@@ -1,0 +1,32 @@
+"use client";
+
+import { Moon, Sun } from "lucide-react";
+import { useTheme } from "next-themes";
+import { useSyncExternalStore } from "react";
+
+import { Button } from "@/components/ui/button";
+
+export function ThemeToggle() {
+  const { resolvedTheme, setTheme } = useTheme();
+  const mounted = useSyncExternalStore(
+    () => () => undefined,
+    () => true,
+    () => false,
+  );
+
+  return (
+    <Button
+      aria-label="Toggle color theme"
+      disabled={!mounted}
+      onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
+      size="icon"
+      variant="ghost"
+    >
+      {mounted && resolvedTheme === "dark" ? (
+        <Sun className="size-4" />
+      ) : (
+        <Moon className="size-4" />
+      )}
+    </Button>
+  );
+}
