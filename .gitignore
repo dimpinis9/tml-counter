@@ -74,4 +74,4 @@ blob-report/
 .tmp-*/
 
 # Local source/reference media. Optimized app assets live in public/.
-images/
+/images/
