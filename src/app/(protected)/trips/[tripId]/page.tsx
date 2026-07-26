@@ -106,7 +106,11 @@ export default async function TripPage({
 
       <div className="relative mt-6 overflow-hidden rounded-[1.75rem] bg-card sm:mt-8 sm:rounded-[2.5rem]">
         <TripCover
-          className="h-[18rem] min-[390px]:h-[21rem] sm:h-[30rem]"
+          className={
+            isOwner
+              ? "h-[18rem] min-[390px]:h-[21rem] sm:h-[30rem]"
+              : "h-44 sm:h-64"
+          }
           cover={trip.cover_path}
           label={new Intl.DateTimeFormat("en", {
             month: "long",
@@ -123,6 +127,7 @@ export default async function TripPage({
         </div>
       </div>
 
+      {isOwner && (
       <div className="grid gap-7 py-8 sm:py-10 lg:grid-cols-[1fr_auto] lg:items-end">
         <div>
           <p className="max-w-2xl text-lg leading-8 text-muted-foreground">
@@ -148,20 +153,24 @@ export default async function TripPage({
           </p>
         </div>
       </div>
+      )}
 
-      <div>
+      <div className={isOwner ? "" : "pt-7"}>
         <div className="mb-5 flex flex-col items-start justify-between gap-4 min-[390px]:flex-row min-[390px]:items-end sm:mb-6">
           <div>
             <p className="font-mono text-xs uppercase tracking-[.2em] text-primary">
-              The memories within
+              {isOwner ? "The memories within" : `${mediaCount} shared memories`}
             </p>
-            <h2 className="mt-1 font-display text-4xl">Book of Memories</h2>
+            <h2 className="mt-1 font-display text-4xl">
+              {isOwner ? "Book of Memories" : "Photos & videos"}
+            </h2>
           </div>
           <MediaUploadDialog tripId={trip.id} userId={user.id} />
         </div>
         <MediaGallery
           currentUserId={user.id}
           initialPage={galleryResult.data}
+          simple={!isOwner}
           tripId={trip.id}
         />
       </div>

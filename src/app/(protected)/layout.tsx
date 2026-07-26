@@ -21,6 +21,15 @@ export default async function ProtectedLayout({
     redirect("/login");
   }
 
+  const { data: ownerMembership } = await supabase
+    .from("trip_members")
+    .select("trip_id")
+    .eq("user_id", user.id)
+    .eq("role", "owner")
+    .limit(1)
+    .maybeSingle();
+  const isOwner = Boolean(ownerMembership);
+
   return (
     <main className="min-h-screen">
       <header className="mx-auto flex max-w-7xl items-center justify-between px-4 pb-4 pt-[max(1rem,env(safe-area-inset-top))] sm:px-8 sm:py-6">
@@ -31,10 +40,12 @@ export default async function ProtectedLayout({
           <span className="hidden min-[360px]:inline">Tomorrowland Memories</span>
         </Link>
         <div className="flex items-center gap-1">
-          <ThemeToggle />
-          <Button asChild aria-label="Your profile" size="icon" variant="ghost">
-            <Link href="/profile"><UserRound className="size-4" /></Link>
-          </Button>
+          {isOwner && <ThemeToggle />}
+          {isOwner && (
+            <Button asChild aria-label="Your profile" size="icon" variant="ghost">
+              <Link href="/profile"><UserRound className="size-4" /></Link>
+            </Button>
+          )}
           <LogoutButton />
         </div>
       </header>

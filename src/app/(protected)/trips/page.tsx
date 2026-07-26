@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { Compass, Plus } from "lucide-react";
 import Link from "next/link";
 
-import { TripCard } from "@/components/trips/trip-card";
 import { StagePortal } from "@/components/tomorrowland/stage-portal";
+import { TripCard } from "@/components/trips/trip-card";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
 import type { TripSummary } from "@/types";
@@ -23,13 +23,26 @@ type TripRow = {
 
 export default async function TripsPage() {
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("trips")
-    .select(
-      "id, name, description, cover_path, created_at, trip_members(count), media(count)",
-    )
-    .order("created_at", { ascending: false })
-    .returns<TripRow[]>();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const [tripsResult, membershipsResult] = await Promise.all([
+    supabase
+      .from("trips")
+      .select(
+        "id, name, description, cover_path, created_at, trip_members(count), media(count)",
+      )
+      .order("created_at", { ascending: false })
+      .returns<TripRow[]>(),
+    supabase
+      .from("trip_members")
+      .select("trip_id, role")
+      .eq("user_id", user?.id ?? ""),
+  ]);
+  const { data, error } = tripsResult;
+  const isOwner = (membershipsResult.data ?? []).some(
+    (membership) => membership.role === "owner",
+  );
 
   const trips: TripSummary[] = (data ?? []).map((trip) => ({
     id: trip.id,
@@ -49,26 +62,31 @@ export default async function TripsPage() {
       <div className="flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
         <div>
           <p className="font-mono text-xs uppercase tracking-[.22em] text-primary">
-            Your Book of Memories
+            {isOwner ? "Your Book of Memories" : "Your private gallery"}
           </p>
           <h1 className="mt-2 font-display text-[clamp(3.4rem,17vw,4.5rem)] leading-[.9]">
-            Festival chapters
+            {isOwner ? "Festival chapters" : "Shared memories"}
           </h1>
           <p className="mt-3 max-w-xl text-muted-foreground">
-            Every stage, every sunrise and every friendship—kept between the
-            people who were there.
+            {isOwner
+              ? "Every stage, every sunrise and every friendship—kept between the people who were there."
+              : "Choose your group, then upload or download the moments you shared."}
           </p>
         </div>
-        <Button asChild>
-          <Link href="/trips/new">
-            <Plus className="size-4" /> New chapter
-          </Link>
-        </Button>
+        {isOwner && (
+          <Button asChild>
+            <Link href="/trips/new">
+              <Plus className="size-4" /> New chapter
+            </Link>
+          </Button>
+        )}
       </div>
 
-      <div className="mt-10">
-        <StagePortal compact />
-      </div>
+      {isOwner && (
+        <div className="mt-10">
+          <StagePortal compact />
+        </div>
+      )}
 
       {error && (
         <p className="mt-10 rounded-2xl border border-destructive/20 bg-destructive/5 p-4 text-sm text-destructive">
@@ -81,14 +99,19 @@ export default async function TripsPage() {
           <span className="mx-auto grid size-14 place-items-center rounded-full bg-primary/10">
             <Compass className="size-6 text-primary" />
           </span>
-          <h2 className="mt-5 font-display text-4xl">The book is waiting.</h2>
+          <h2 className="mt-5 font-display text-4xl">
+            {isOwner ? "The book is waiting." : "No shared group yet."}
+          </h2>
           <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-muted-foreground">
-            Begin with a Tomorrowland weekend, a stage, or the name your group
-            gave the adventure.
+            {isOwner
+              ? "Begin with a Tomorrowland weekend, a stage, or the name your group gave the adventure."
+              : "Ask the group owner to add you, then your shared photos will appear here."}
           </p>
-          <Button asChild className="mt-6">
-            <Link href="/trips/new">Write the first chapter</Link>
-          </Button>
+          {isOwner && (
+            <Button asChild className="mt-6">
+              <Link href="/trips/new">Write the first chapter</Link>
+            </Button>
+          )}
         </div>
       )}
 

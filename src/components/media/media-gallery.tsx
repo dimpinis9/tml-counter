@@ -49,10 +49,12 @@ export function MediaGallery({
   initialPage,
   tripId,
   currentUserId,
+  simple = false,
 }: {
   initialPage: MediaPage;
   tripId: string;
   currentUserId: string;
+  simple?: boolean;
 }) {
   const [items, setItems] = useState(initialPage.items);
   const [total, setTotal] = useState(initialPage.total);
@@ -201,7 +203,15 @@ export function MediaGallery({
 
   return (
     <div>
-      <div className="mb-4 flex flex-col gap-3 rounded-2xl border border-border/70 bg-card/80 p-2.5 sm:mb-5 sm:flex-row sm:items-center sm:justify-between sm:p-3">
+      <div
+        className={cn(
+          "mb-4 rounded-2xl border border-border/70 bg-card/80 p-2.5 sm:mb-5 sm:p-3",
+          simple
+            ? "flex items-center justify-between gap-3"
+            : "flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between",
+        )}
+      >
+        {!simple && (
         <div className="-mx-0.5 flex max-w-full items-center gap-1 overflow-x-auto rounded-xl bg-muted p-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {filterOptions.map((option) => (
             <button
@@ -220,10 +230,19 @@ export function MediaGallery({
             </button>
           ))}
         </div>
-        <div className="grid grid-cols-[1fr_auto] items-center gap-2 min-[390px]:grid-cols-[auto_1fr_auto] sm:flex sm:flex-wrap">
+        )}
+        <div
+          className={cn(
+            "items-center gap-2",
+            simple
+              ? "flex w-full justify-between"
+              : "grid grid-cols-[1fr_auto] min-[390px]:grid-cols-[auto_1fr_auto] sm:flex sm:flex-wrap",
+          )}
+        >
           <span className="col-span-2 text-sm text-muted-foreground min-[390px]:col-span-1 sm:mr-2">
             {total} {total === 1 ? "memory" : "memories"}
           </span>
+          {!simple && (
           <select
             aria-label="Sort gallery"
             className="h-11 min-w-0 rounded-xl border border-input bg-background px-3 text-base outline-none focus:ring-2 focus:ring-ring sm:h-10 sm:text-sm"
@@ -234,6 +253,7 @@ export function MediaGallery({
             <option value="newest">Newest first</option>
             <option value="oldest">Oldest first</option>
           </select>
+          )}
           <Button
             onClick={() => {
               setSelectionMode((current) => !current);
@@ -243,7 +263,7 @@ export function MediaGallery({
             variant={selectionMode ? "default" : "outline"}
           >
             {selectionMode ? <X className="size-4" /> : <Check className="size-4" />}
-            {selectionMode ? "Done" : "Select"}
+            {selectionMode ? "Done" : simple ? "Download" : "Select"}
           </Button>
         </div>
       </div>
