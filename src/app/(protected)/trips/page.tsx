@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import { Compass, Plus } from "lucide-react";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
 import { StagePortal } from "@/components/tomorrowland/stage-portal";
 import { TripCard } from "@/components/trips/trip-card";
 import { Button } from "@/components/ui/button";
+import { getMemberLandingPath } from "@/lib/auth/member-landing";
 import { createClient } from "@/lib/supabase/server";
 import type { TripSummary } from "@/types";
 
@@ -40,7 +42,15 @@ export default async function TripsPage() {
       .eq("user_id", user?.id ?? ""),
   ]);
   const { data, error } = tripsResult;
-  const isOwner = (membershipsResult.data ?? []).some(
+  const memberships = (membershipsResult.data ?? []) as Array<{
+    trip_id: string;
+    role: "owner" | "member";
+  }>;
+  const memberLandingPath = getMemberLandingPath(memberships);
+  if (memberLandingPath) {
+    redirect(memberLandingPath);
+  }
+  const isOwner = memberships.some(
     (membership) => membership.role === "owner",
   );
 

@@ -37,10 +37,13 @@ type MemberRow = {
 
 export default async function TripPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ tripId: string }>;
+  searchParams: Promise<{ upload?: string }>;
 }) {
   const { tripId } = await params;
+  const { upload } = await searchParams;
   const supabase = await createClient();
   const {
     data: { user },
@@ -165,7 +168,11 @@ export default async function TripPage({
               {isOwner ? "Book of Memories" : "Photos & videos"}
             </h2>
           </div>
-          <MediaUploadDialog tripId={trip.id} userId={user.id} />
+          <MediaUploadDialog
+            autoOpen={!isOwner && upload === "1"}
+            tripId={trip.id}
+            userId={user.id}
+          />
         </div>
         <MediaGallery
           currentUserId={user.id}

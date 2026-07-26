@@ -83,9 +83,11 @@ const acceptedFiles = [
 export function MediaUploadDialog({
   tripId,
   userId,
+  autoOpen = false,
 }: {
   tripId: string;
   userId: string;
+  autoOpen?: boolean;
 }) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -94,7 +96,13 @@ export function MediaUploadDialog({
   const [dragging, setDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [items, setItems] = useState<UploadItem[]>([]);
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(autoOpen);
+
+  useEffect(() => {
+    if (autoOpen) {
+      router.replace(`/trips/${tripId}`, { scroll: false });
+    }
+  }, [autoOpen, router, tripId]);
 
   const validItems = items.filter((item) => item.mediaType);
   const totalBytes = validItems.reduce((total, item) => total + item.file.size, 0);
