@@ -134,15 +134,19 @@ export async function deleteTripAction(
 
   const { data: mediaRows, error: mediaError } = await authorization.supabase
     .from("media")
-    .select("storage_path")
+    .select("storage_path, thumbnail_path")
     .eq("trip_id", parsedId.data)
-    .returns<Array<{ storage_path: string }>>();
+    .returns<Array<{ storage_path: string; thumbnail_path: string | null }>>();
   if (mediaError) {
     return { success: false, error: "The chapter files could not be checked." };
   }
 
   const cleanup = await cleanupTripStorage(
-    (mediaRows ?? []).map((item) => item.storage_path),
+    (mediaRows ?? []).flatMap((item) =>
+      item.thumbnail_path
+        ? [item.storage_path, item.thumbnail_path]
+        : [item.storage_path],
+    ),
   );
   if (!cleanup.success) {
     return cleanup;

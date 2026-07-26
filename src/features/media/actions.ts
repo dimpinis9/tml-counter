@@ -26,6 +26,7 @@ type MediaAccessRow = {
   id: string;
   trip_id: string;
   storage_path: string;
+  thumbnail_path: string | null;
   original_filename: string;
   media_type: "photo" | "video";
   uploaded_by: string;
@@ -60,6 +61,7 @@ export async function createMediaUrlAction(
       ? { download: getDownloadFilename(authorization.media.original_filename) }
       : parsedPurpose.data === "thumbnail" &&
           authorization.media.media_type === "photo" &&
+          !authorization.media.thumbnail_path &&
           process.env.SUPABASE_IMAGE_TRANSFORMATIONS_ENABLED === "true"
         ? {
             transform: {
@@ -71,10 +73,15 @@ export async function createMediaUrlAction(
           }
         : undefined;
 
+  const signedPath =
+    parsedPurpose.data === "thumbnail" &&
+    authorization.media.thumbnail_path
+      ? authorization.media.thumbnail_path
+      : authorization.media.storage_path;
   const { data, error } = await authorization.supabase.storage
     .from("trip-media")
     .createSignedUrl(
-      authorization.media.storage_path,
+      signedPath,
       URL_TTL_SECONDS,
       options,
     );
@@ -109,7 +116,7 @@ export async function deleteMediaAction(
 
   const { data: media } = await supabase
     .from("media")
-    .select("id, trip_id, storage_path, original_filename, media_type, uploaded_by")
+    .select("id, trip_id, storage_path, thumbnail_path, original_filename, media_type, uploaded_by")
     .eq("id", parsedMediaId.data)
     .maybeSingle<MediaAccessRow>();
 
@@ -125,7 +132,11 @@ export async function deleteMediaAction(
 
   const { error: storageError } = await supabase.storage
     .from("trip-media")
-    .remove([media.storage_path]);
+    .remove(
+      media.thumbnail_path
+        ? [media.storage_path, media.thumbnail_path]
+        : [media.storage_path],
+    );
   if (storageError) {
     return {
       success: false,
@@ -165,7 +176,7 @@ async function getAuthorizedMedia(mediaId: string) {
 
   const { data: media } = await supabase
     .from("media")
-    .select("id, trip_id, storage_path, original_filename, media_type, uploaded_by")
+    .select("id, trip_id, storage_path, thumbnail_path, original_filename, media_type, uploaded_by")
     .eq("id", mediaId)
     .maybeSingle<MediaAccessRow>();
   if (!media) {

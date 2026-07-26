@@ -28,6 +28,7 @@ type MediaRow = {
   created_at: string;
   uploaded_by: string;
   storage_path: string;
+  thumbnail_path: string | null;
   profiles: { display_name: string } | null;
 };
 
@@ -74,7 +75,7 @@ export async function getMediaPage({
   let query = supabase
     .from("media")
     .select(
-      "id, original_filename, media_type, mime_type, file_size, width, height, duration_seconds, captured_at, created_at, uploaded_by, storage_path, profiles!media_uploaded_by_fkey(display_name)",
+      "id, original_filename, media_type, mime_type, file_size, width, height, duration_seconds, captured_at, created_at, uploaded_by, storage_path, thumbnail_path, profiles!media_uploaded_by_fkey(display_name)",
       { count: "exact" },
     )
     .eq("trip_id", parsedTripId.data);
@@ -122,8 +123,8 @@ export async function getMediaPage({
         createdAt: item.created_at,
         uploadedBy: item.uploaded_by,
         uploaderName: item.profiles?.display_name ?? "Trip member",
-        thumbnailUrl: thumbnailUrls.get(item.storage_path) ?? null,
-        thumbnailExpiresAt: thumbnailUrls.has(item.storage_path)
+        thumbnailUrl: thumbnailUrls.get(item.id) ?? null,
+        thumbnailExpiresAt: thumbnailUrls.has(item.id)
           ? expiresAt
           : null,
       })),
@@ -139,7 +140,7 @@ export async function getMediaPage({
 
 async function createThumbnailUrls(
   supabase: Awaited<ReturnType<typeof createClient>>,
-  rows: Array<Pick<MediaRow, "storage_path">>,
+  rows: Array<Pick<MediaRow, "id" | "storage_path" | "thumbnail_path">>,
 ) {
   const result = new Map<string, string>();
 
@@ -152,12 +153,13 @@ async function createThumbnailUrls(
 
   await Promise.all(
     rows.map(async (item) => {
+      const thumbnailPath = item.thumbnail_path;
       const { data } = await supabase.storage
         .from("trip-media")
         .createSignedUrl(
-          item.storage_path,
+          thumbnailPath ?? item.storage_path,
           THUMBNAIL_TTL_SECONDS,
-          transformationsEnabled
+          !thumbnailPath && transformationsEnabled
             ? {
                 transform: {
                   width: 640,
@@ -169,7 +171,7 @@ async function createThumbnailUrls(
             : undefined,
         );
       if (data?.signedUrl) {
-        result.set(item.storage_path, data.signedUrl);
+        result.set(item.id, data.signedUrl);
       }
     }),
   );

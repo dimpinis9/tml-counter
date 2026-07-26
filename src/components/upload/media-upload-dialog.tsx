@@ -42,6 +42,10 @@ import {
   type MediaType,
 } from "@/lib/media/files";
 import { extractMediaMetadata } from "@/lib/media/metadata";
+import {
+  buildThumbnailStoragePath,
+  createPhotoThumbnail,
+} from "@/lib/media/thumbnails";
 import { createClient } from "@/lib/supabase/client";
 
 type UploadStatus =
@@ -250,6 +254,17 @@ export function MediaUploadDialog({
 
         try {
           const metadata = await extractMediaMetadata(item.file, item.mediaType);
+          const thumbnail =
+            item.mediaType === "photo"
+              ? await createPhotoThumbnail(item.file)
+              : null;
+          const thumbnailPath = thumbnail
+            ? buildThumbnailStoragePath({
+                tripId,
+                userId: user.id,
+                mediaId,
+              })
+            : null;
           const upload = startResumableUpload({
             accessToken: session.access_token,
             contentType: item.mimeType,
@@ -263,12 +278,30 @@ export function MediaUploadDialog({
           await upload.completion;
           activeUploads.current.delete(clientId);
 
+          let storedThumbnailPath: string | null = null;
+          if (thumbnail && thumbnailPath) {
+            const { error: thumbnailError } = await supabase.storage
+              .from("trip-media")
+              .upload(thumbnailPath, thumbnail, {
+                contentType: "image/webp",
+                upsert: false,
+              });
+            if (thumbnailError) {
+              toast.warning(
+                `${item.file.name} uploaded without an optimized gallery preview.`,
+              );
+            } else {
+              storedThumbnailPath = thumbnailPath;
+            }
+          }
+
           const { error: insertError } = await supabase.from("media").insert({
             id: mediaId,
             trip_id: tripId,
             album_id: null,
             uploaded_by: user.id,
             storage_path: storagePath,
+            thumbnail_path: storedThumbnailPath,
             original_filename: item.file.name,
             mime_type: item.mimeType,
             media_type: item.mediaType,
@@ -282,7 +315,11 @@ export function MediaUploadDialog({
           if (insertError) {
             const { error: cleanupError } = await supabase.storage
               .from("trip-media")
-              .remove([storagePath]);
+              .remove(
+                storedThumbnailPath
+                  ? [storagePath, storedThumbnailPath]
+                  : [storagePath],
+              );
             throw new Error(
               cleanupError
                 ? "The file uploaded, but its record and automatic cleanup failed. Contact the trip owner."

@@ -230,9 +230,11 @@ local placeholder until the viewer is opened. On the Free plan keep the value
 `false`: the gallery deliberately displays private placeholders instead of
 loading every full-resolution original. The active original is signed only
 when the user opens it. When transformations are disabled, the gallery uses a
-short-lived signed URL for the private original as a functional fallback. This
-keeps shared media visible to every trip member, but uses more bandwidth than
-optimized thumbnails. HEIC source transformations are supported by Supabase,
+browser-generated private WebP thumbnail (maximum edge 640px) when available.
+The original is never modified and remains the source for the viewer and every
+download. Existing media or formats that cannot be decoded safely in the
+browser use a short-lived signed original as a fallback. HEIC source
+transformations are supported by Supabase,
 but browser rendering still depends on the transformed output and plan
 availability.
 
