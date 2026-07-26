@@ -71,16 +71,6 @@ export async function createMediaUrlAction(
           }
         : undefined;
 
-  if (
-    parsedPurpose.data === "thumbnail" &&
-    process.env.SUPABASE_IMAGE_TRANSFORMATIONS_ENABLED !== "true"
-  ) {
-    return {
-      success: false,
-      error: "Thumbnail transformations are not enabled for this project.",
-    };
-  }
-
   const { data, error } = await authorization.supabase.storage
     .from("trip-media")
     .createSignedUrl(

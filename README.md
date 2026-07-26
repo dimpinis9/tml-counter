@@ -229,7 +229,10 @@ Photo grid previews then use 640×640 transformed signed URLs. Video items use a
 local placeholder until the viewer is opened. On the Free plan keep the value
 `false`: the gallery deliberately displays private placeholders instead of
 loading every full-resolution original. The active original is signed only
-when the user opens it. HEIC source transformations are supported by Supabase,
+when the user opens it. When transformations are disabled, the gallery uses a
+short-lived signed URL for the private original as a functional fallback. This
+keeps shared media visible to every trip member, but uses more bandwidth than
+optimized thumbnails. HEIC source transformations are supported by Supabase,
 but browser rendering still depends on the transformed output and plan
 availability.
 

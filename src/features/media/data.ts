@@ -143,25 +143,31 @@ async function createThumbnailUrls(
 ) {
   const result = new Map<string, string>();
 
-  if (
-    process.env.SUPABASE_IMAGE_TRANSFORMATIONS_ENABLED !== "true" ||
-    rows.length === 0
-  ) {
+  if (rows.length === 0) {
     return result;
   }
+
+  const transformationsEnabled =
+    process.env.SUPABASE_IMAGE_TRANSFORMATIONS_ENABLED === "true";
 
   await Promise.all(
     rows.map(async (item) => {
       const { data } = await supabase.storage
         .from("trip-media")
-        .createSignedUrl(item.storage_path, THUMBNAIL_TTL_SECONDS, {
-          transform: {
-            width: 640,
-            height: 640,
-            quality: 72,
-            resize: "cover",
-          },
-        });
+        .createSignedUrl(
+          item.storage_path,
+          THUMBNAIL_TTL_SECONDS,
+          transformationsEnabled
+            ? {
+                transform: {
+                  width: 640,
+                  height: 640,
+                  quality: 72,
+                  resize: "cover",
+                },
+              }
+            : undefined,
+        );
       if (data?.signedUrl) {
         result.set(item.storage_path, data.signedUrl);
       }
