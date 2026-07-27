@@ -11,6 +11,12 @@ export function isOwnerRole(
   return role === "owner";
 }
 
+export function canDownloadTripArchive(
+  role: TripRole | null | undefined,
+) {
+  return isOwnerRole(role);
+}
+
 export function hasMembership(
   memberships: readonly MembershipIdentity[],
   userId: string,

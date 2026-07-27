@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  canDownloadTripArchive,
   canRemoveMember,
   hasMembership,
   isOwnerRole,
@@ -10,6 +11,9 @@ describe("trip permissions", () => {
   it("recognizes owner authorization", () => {
     expect(isOwnerRole("owner")).toBe(true);
     expect(isOwnerRole("member")).toBe(false);
+    expect(canDownloadTripArchive("owner")).toBe(true);
+    expect(canDownloadTripArchive("member")).toBe(false);
+    expect(canDownloadTripArchive(undefined)).toBe(false);
   });
 
   it("checks membership by user id", () => {

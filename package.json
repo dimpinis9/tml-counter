@@ -25,6 +25,7 @@
     "@supabase/ssr": "latest",
     "@supabase/supabase-js": "latest",
     "class-variance-authority": "latest",
+    "client-zip": "^2.5.0",
     "clsx": "latest",
     "lucide-react": "latest",
     "next": "latest",

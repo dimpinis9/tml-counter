@@ -45,3 +45,17 @@ export type MediaUrlResult =
 export type DeleteMediaResult =
   | { success: true }
   | { success: false; error: string; partial?: boolean };
+
+export type OwnerArchiveManifestResult =
+  | {
+      success: true;
+      filename: string;
+      totalBytes: number;
+      expiresAt: string;
+      items: Array<{
+        url: string;
+        archiveName: string;
+        fileSize: number;
+      }>;
+    }
+  | { success: false; error: string };

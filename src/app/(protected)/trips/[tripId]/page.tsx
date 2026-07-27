@@ -8,6 +8,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { MediaGallery } from "@/components/media/media-gallery";
+import { OwnerArchiveDownload } from "@/components/media/owner-archive-download";
 import {
   MemberAvatars,
   type MemberAvatar,
@@ -168,11 +169,20 @@ export default async function TripPage({
               {isOwner ? "Book of Memories" : "Photos & videos"}
             </h2>
           </div>
-          <MediaUploadDialog
-            autoOpen={!isOwner && upload === "1"}
-            tripId={trip.id}
-            userId={user.id}
-          />
+          <div className="flex w-full flex-col gap-2 min-[390px]:w-auto sm:flex-row">
+            {isOwner && (
+              <OwnerArchiveDownload
+                mediaCount={mediaCount}
+                tripId={trip.id}
+                tripName={trip.name}
+              />
+            )}
+            <MediaUploadDialog
+              autoOpen={!isOwner && upload === "1"}
+              tripId={trip.id}
+              userId={user.id}
+            />
+          </div>
         </div>
         <MediaGallery
           currentUserId={user.id}
