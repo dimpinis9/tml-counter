@@ -174,7 +174,6 @@ export default async function TripPage({
               <OwnerArchiveDownload
                 mediaCount={mediaCount}
                 tripId={trip.id}
-                tripName={trip.name}
               />
             )}
             <MediaUploadDialog

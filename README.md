@@ -214,10 +214,9 @@ The chapter owner also sees **Download all (.zip)**. This action performs a
 fresh server-side owner check, creates one-hour signed links for every original,
 and builds `Photos/` and `Videos/` folders locally in the browser. Media bytes
 travel directly from private Supabase Storage to the owner's device and never
-pass through a Netlify function. Chromium-based desktop browsers stream the ZIP
-directly to the selected file. Browsers without the File System Access API use
-a compatible in-memory fallback and show an extra warning for archives of
-500 MB or more. Keep the page open until the archive finishes.
+pass through a Netlify function. The compatible browser flow finishes building
+the ZIP before saving it and shows an extra warning for archives of 500 MB or
+more. Keep the page open until the archive finishes.
 
 Deletion first verifies uploader ownership, then removes the Storage object,
 then removes its database record. Storage and Postgres cannot share one

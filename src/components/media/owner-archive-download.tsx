@@ -19,23 +19,11 @@ import { Button } from "@/components/ui/button";
 import { createOwnerArchiveManifestAction } from "@/features/media/archive-actions";
 import { LARGE_ARCHIVE_WARNING_BYTES } from "@/lib/media/archive";
 
-type SaveFilePickerWindow = Window & {
-  showSaveFilePicker?: (options: {
-    suggestedName: string;
-    types: Array<{
-      description: string;
-      accept: Record<string, string[]>;
-    }>;
-  }) => Promise<FileSystemFileHandle>;
-};
-
 export function OwnerArchiveDownload({
   tripId,
-  tripName,
   mediaCount,
 }: {
   tripId: string;
-  tripName: string;
   mediaCount: number;
 }) {
   const [isWorking, setIsWorking] = useState(false);
@@ -50,20 +38,6 @@ export function OwnerArchiveDownload({
     abortRef.current = abortController;
 
     try {
-      const pickerWindow = window as SaveFilePickerWindow;
-      const suggestedName = `${tripName.replace(/[^a-z0-9]+/gi, "-") || "chapter"}-originals.zip`;
-      const fileHandle = pickerWindow.showSaveFilePicker
-        ? await pickerWindow.showSaveFilePicker({
-            suggestedName,
-            types: [
-              {
-                description: "ZIP archive",
-                accept: { "application/zip": [".zip"] },
-              },
-            ],
-          })
-        : null;
-
       const manifest = await createOwnerArchiveManifestAction(tripId);
       if (!manifest.success) {
         throw new Error(manifest.error);
@@ -71,10 +45,9 @@ export function OwnerArchiveDownload({
 
       setTotal(manifest.items.length);
       if (
-        !fileHandle &&
         manifest.totalBytes >= LARGE_ARCHIVE_WARNING_BYTES &&
         !window.confirm(
-          `This archive contains ${formatFileSize(manifest.totalBytes)} of originals. Your browser must hold the ZIP in memory before saving it. Continue?`,
+          `This archive contains ${formatFileSize(manifest.totalBytes)} of originals. Your browser must finish building the ZIP before saving it. Continue?`,
         )
       ) {
         return;
@@ -103,23 +76,21 @@ export function OwnerArchiveDownload({
       }
 
       const zipResponse = downloadZip(originalFiles());
-      if (fileHandle) {
-        if (!zipResponse.body) {
-          throw new Error("Your browser could not stream the ZIP archive.");
-        }
-        const writable = await fileHandle.createWritable();
-        await zipResponse.body.pipeTo(writable, {
-          signal: abortController.signal,
-        });
-      } else {
-        const blob = await zipResponse.blob();
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = manifest.filename;
-        link.click();
-        window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
+      const blob = await zipResponse.blob();
+      if (blob.size <= 22) {
+        throw new Error(
+          "The browser produced an empty archive. No file was saved.",
+        );
       }
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = manifest.filename;
+      link.hidden = true;
+      document.body.append(link);
+      link.click();
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
 
       setCompleted(items.length);
       toast.success("The complete original archive is ready.");
