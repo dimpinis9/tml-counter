@@ -177,7 +177,7 @@ The `trip-media` Supabase Storage bucket is created by
 `202607230003_private_trip_media_storage.sql`. It is always private and accepts:
 
 - JPEG, PNG, WebP, HEIC, and HEIF photos up to 30 MB;
-- MP4, MOV, and WebM videos up to 1 GB.
+- MP4, MOV, and WebM videos up to 50 MB on the Free plan.
 
 Objects use immutable UUID paths:
 
@@ -241,9 +241,16 @@ availability.
 ### Supabase plan limit
 
 The bucket ceiling is configured for 1 GB, but the Supabase project's global
-Storage limit still applies. Free projects currently allow files only up to
-50 MB. Supporting videos larger than 50 MB therefore requires a paid Supabase
-plan and a matching global limit in **Storage → Settings**.
+Storage limit still applies. Free projects allow files only up to 50 MB, so the
+application defaults to:
+
+```env
+NEXT_PUBLIC_VIDEO_MAX_MB=50
+```
+
+After upgrading Supabase, raise the global limit in **Storage → Settings** and
+set the same application value (up to `1024`) before rebuilding. The original
+video is always stored and downloaded without recompression.
 
 ## Production smoke test
 

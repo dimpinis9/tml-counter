@@ -39,6 +39,7 @@ import {
 import {
   buildStoragePath,
   validateMediaFile,
+  VIDEO_MAX_MB,
   type MediaType,
 } from "@/lib/media/files";
 import { extractMediaMetadata } from "@/lib/media/metadata";
@@ -409,8 +410,8 @@ export function MediaUploadDialog({
         <DialogHeader>
           <DialogTitle>Add to the chapter</DialogTitle>
           <DialogDescription>
-            Photos up to 30 MB and videos up to 1 GB. Everything stays private
-            to the people in this chapter.
+            Photos up to 30 MB and videos up to {VIDEO_MAX_MB} MB. Originals
+            stay private and download at full quality.
           </DialogDescription>
         </DialogHeader>
 

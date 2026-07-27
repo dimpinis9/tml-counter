@@ -1,5 +1,6 @@
 export const PHOTO_MAX_BYTES = 30 * 1024 * 1024;
-export const VIDEO_MAX_BYTES = 1024 * 1024 * 1024;
+export const VIDEO_MAX_MB = getConfiguredVideoMaxMb();
+export const VIDEO_MAX_BYTES = VIDEO_MAX_MB * 1024 * 1024;
 
 const photoTypes = new Set([
   "image/jpeg",
@@ -64,7 +65,7 @@ export function validateMediaFile(file: FileLike): FileValidationResult {
       error:
         mediaType === "photo"
           ? "Photos must be 30 MB or smaller."
-          : "Videos must be 1 GB or smaller.",
+          : `Videos must be ${VIDEO_MAX_MB} MB or smaller.`,
     };
   }
 
@@ -143,4 +144,11 @@ function isUuid(value: string) {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
     value,
   );
+}
+
+function getConfiguredVideoMaxMb() {
+  const configured = Number(process.env.NEXT_PUBLIC_VIDEO_MAX_MB ?? "50");
+  return Number.isInteger(configured) && configured >= 1 && configured <= 1024
+    ? configured
+    : 50;
 }
