@@ -248,17 +248,15 @@ availability.
 
 ### Supabase plan limit
 
-The bucket ceiling is configured for 1 GB, but the Supabase project's global
-Storage limit still applies. Free projects allow files only up to 50 MB, so the
-application defaults to:
+The bucket ceiling is configured for 2 GB. The Supabase project's global
+Storage limit still applies. Production on Pro is configured with:
 
 ```env
-NEXT_PUBLIC_VIDEO_MAX_MB=50
+NEXT_PUBLIC_VIDEO_MAX_MB=2048
 ```
 
-After upgrading Supabase, raise the global limit in **Storage → Settings** and
-set the same application value (up to `1024`) before rebuilding. The original
-video is always stored and downloaded without recompression.
+Set the global limit in **Storage → Settings** to at least 2 GB before uploading.
+The original video is always stored and downloaded without recompression.
 
 ## Production smoke test
 
